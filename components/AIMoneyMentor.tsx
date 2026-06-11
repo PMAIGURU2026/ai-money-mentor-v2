@@ -4,9 +4,10 @@ import { createClient } from "@/lib/supabase-client";
 import dynamic from "next/dynamic";
 import CharlotteLogo from "./Logo";
 
-const GoalsSection = dynamic(() => import("./GoalsSection"), { ssr: false });
-const LinksSection = dynamic(() => import("./LinksSection"), { ssr: false });
-const AuthModal    = dynamic(() => import("./AuthModal"),    { ssr: false });
+const GoalsSection    = dynamic(() => import("./GoalsSection"),    { ssr: false });
+const LinksSection    = dynamic(() => import("./LinksSection"),    { ssr: false });
+const AuthModal       = dynamic(() => import("./AuthModal"),       { ssr: false });
+const CharlotteAvatar = dynamic(() => import("./CharlotteAvatar"), { ssr: false });
 
 /* ─────────────── DESIGN TOKENS ─────────────── */
 const C = {
@@ -240,9 +241,15 @@ function QuizWidget({ sectionKey }: { sectionKey: string }) {
         })}
       </div>
       {selected !== null && (
-        <div style={{ marginTop: 11, padding: 11, background: selected === q.correct ? "rgba(26,92,53,0.1)" : "#fff0f0", borderRadius: 10, color: selected === q.correct ? C.forest : "#c0392b", fontSize: 13, lineHeight: 1.5 }}>
-          {selected === q.correct ? "✅ " : "❌ "}<strong>{selected === q.correct ? "Correct!" : "Not quite."}</strong> {q.explanation}
-          {selected === q.correct && <span style={{ color: C.gold, fontWeight: 700 }}> +{q.xp} XP! 🏅</span>}
+        <div style={{ marginTop: 11 }}>
+          {selected === q.correct ? (
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+              <CharlotteAvatar state="celebrating" size={60} showBubble={true} message={`Correct! +${q.xp} XP! 🏅`} />
+            </div>
+          ) : null}
+          <div style={{ padding: 11, background: selected === q.correct ? "rgba(26,92,53,0.1)" : "#fff0f0", borderRadius: 10, color: selected === q.correct ? C.forest : "#c0392b", fontSize: 13, lineHeight: 1.5 }}>
+            {selected === q.correct ? "✅ " : "❌ "}<strong>{selected === q.correct ? "Correct!" : "Not quite."}</strong> {q.explanation}
+          </div>
         </div>
       )}
     </div>
@@ -257,6 +264,9 @@ function HomeTab({ onNavigate }: { onNavigate: (id: SectionId) => void }) {
   return (
     <div>
       <HeroSection title="Welcome back, Paula 👋" subtitle="Good morning" emoji="">
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+          <CharlotteAvatar state="greeting" size={68} showBubble={true} message="Good morning! Ready to level up your money game today? 💚" />
+        </div>
         <div style={{ background: "rgba(255,255,255,0.1)", border: `1px solid rgba(201,169,78,0.3)`, borderRadius: 14, padding: 16, backdropFilter: "blur(10px)" }}>
           <div style={{ color: C.sageMid, fontSize: 10, letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>Monthly Budget</div>
           <div style={{ color: "white", fontSize: 30, fontWeight: 600, fontFamily: "'Playfair Display', serif" }}>
@@ -550,7 +560,11 @@ function CharlotteTab({ currentSection }: { currentSection: SectionId }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
-      <HeroSection title="Charlotte" subtitle="AI Money Mentor • Always here" emoji="✨" />
+      <HeroSection title="Charlotte" subtitle="AI Money Mentor • Always here" emoji="✨">
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
+          <CharlotteAvatar state={loading ? "thinking" : "idle"} size={72} />
+        </div>
+      </HeroSection>
       <div style={{ padding: "8px 12px 5px", display: "flex", gap: 7, flexWrap: "wrap", borderBottom: `1px solid ${C.border}`, background: C.white }}>
         {QUICK_PROMPTS.map(q => (
           <button key={q} onClick={() => setInput(q)}
