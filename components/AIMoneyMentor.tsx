@@ -1,5 +1,11 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { createClient } from "@/lib/supabase-client";
+import dynamic from "next/dynamic";
+
+const GoalsSection = dynamic(() => import("./GoalsSection"), { ssr: false });
+const LinksSection = dynamic(() => import("./LinksSection"), { ssr: false });
+const AuthModal    = dynamic(() => import("./AuthModal"),    { ssr: false });
 
 /* ─────────────── DESIGN TOKENS ─────────────── */
 const C = {
@@ -28,6 +34,7 @@ const C = {
 /* ─────────────── TYPES ─────────────── */
 type SectionId =
   | "home" | "budget" | "charlotte" | "learn" | "progress"
+  | "goals" | "links"
   | "home-buying" | "credit" | "investments" | "retirement"
   | "education-529" | "taxes-personal" | "taxes-business" | "estate-planning";
 
@@ -38,11 +45,13 @@ const NAV_GROUPS = [
   {
     label: "Dashboard",
     items: [
-      { id: "home" as SectionId,      icon: "🏠", label: "Home",         short: "Home" },
-      { id: "budget" as SectionId,    icon: "📊", label: "Budget",       short: "Budget" },
-      { id: "charlotte" as SectionId, icon: "✨", label: "Ask Charlotte", short: "Charlotte" },
-      { id: "learn" as SectionId,     icon: "📚", label: "Learn",        short: "Learn" },
-      { id: "progress" as SectionId,  icon: "🏆", label: "Progress",     short: "Progress" },
+      { id: "home" as SectionId,      icon: "🏠", label: "Home",          short: "Home" },
+      { id: "budget" as SectionId,    icon: "📊", label: "Budget",        short: "Budget" },
+      { id: "charlotte" as SectionId, icon: "✨", label: "Ask Charlotte",  short: "Charlotte" },
+      { id: "learn" as SectionId,     icon: "📚", label: "Learn",         short: "Learn" },
+      { id: "progress" as SectionId,  icon: "🏆", label: "Progress",      short: "Progress" },
+      { id: "goals" as SectionId,     icon: "🎯", label: "Savings Goals", short: "Goals" },
+      { id: "links" as SectionId,     icon: "🔗", label: "My Links",      short: "Links" },
     ],
   },
   {
@@ -128,27 +137,21 @@ const BUDGET_ITEMS = [
 ];
 
 /* ─────────────── LOGO COMPONENT ─────────────── */
-function CharlotteLogo({ size = 40, showText = true }: { size?: number; showText?: boolean }) {
+function CharlotteLogo({ size = 40, showText = false }: { size?: number; showText?: boolean }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: showText ? 10 : 0 }}>
-      {/* Logo mark: leaf + plant stem with upward arrow = growth */}
-      <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-        {/* Outer circle */}
-        <circle cx="24" cy="24" r="23" fill="#0e3d22" stroke="#c9a94e" strokeWidth="1.5"/>
-        {/* Leaf shape */}
-        <path d="M24 34 C24 34 12 28 12 18 C12 12 18 8 24 10 C30 8 36 12 36 18 C36 28 24 34 24 34Z" fill="#2d7a4a" stroke="#1a5c35" strokeWidth="0.5"/>
-        {/* Inner leaf highlight */}
-        <path d="M24 31 C24 31 15 26 15 18 C15 13.5 19 10.5 24 12 C29 10.5 33 13.5 33 18 C33 26 24 31 24 31Z" fill="#1a5c35"/>
-        {/* Leaf center vein */}
-        <path d="M24 34 L24 13" stroke="#c9a94e" strokeWidth="1" strokeLinecap="round"/>
-        {/* Leaf side veins */}
-        <path d="M24 22 L18 17" stroke="#c8d9a8" strokeWidth="0.75" strokeLinecap="round" opacity="0.6"/>
-        {/* Sparkle/star — AI element */}
-        <circle cx="30" cy="13" r="4" fill="#c9a94e" opacity="0.9"/>
-        <path d="M30 10 L30.5 12.5 L33 13 L30.5 13.5 L30 16 L29.5 13.5 L27 13 L29.5 12.5 Z" fill="white" opacity="0.9"/>
-        {/* Growth arrow at bottom of stem */}
-        <path d="M22 37 L24 40 L26 37" stroke="#e8c97a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      </svg>
+      <img
+        src="/aimm-logo-v2.png"
+        alt="AI Money Mentor logo"
+        style={{
+          height: size * 1.6,
+          width: "auto",
+          objectFit: "contain",
+          borderRadius: 8,
+          background: "#e8f0d8",
+          padding: "2px 6px",
+        }}
+      />
       {showText && (
         <div>
           <div style={{ fontFamily: "'Playfair Display', serif", color: C.goldLight, fontSize: size * 0.38, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.3px" }}>
@@ -612,13 +615,15 @@ function CharlotteTab({ currentSection }: { currentSection: SectionId }) {
 }
 
 /* ─────────────── SECTION REGISTRY ─────────────── */
-function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, activeSection: SectionId) {
+function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, activeSection: SectionId, isLoggedIn: boolean) {
   switch (id) {
     case "home":      return <HomeTab onNavigate={onNavigate} />;
     case "budget":    return <BudgetTab />;
     case "charlotte": return <CharlotteTab currentSection={activeSection} />;
     case "learn":     return <LearnTab />;
     case "progress":  return <ProgressTab />;
+    case "goals":     return <GoalsSection isLoggedIn={isLoggedIn} />;
+    case "links":     return <LinksSection isLoggedIn={isLoggedIn} />;
 
     case "home-buying":
       return <GoalSection icon="🏡" title="Buying a Home" quizKey="home-buying"
@@ -787,14 +792,38 @@ export default function AIMoneyMentor() {
   const [active, setActive] = useState<SectionId>("home");
   const [disclaimerShown, setDisclaimerShown] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const mainRef = useRef<HTMLDivElement>(null);
+  const supabase = createClient();
 
-  const activeItem = ALL_ITEMS.find(i => i.id === active);
+  // Check existing session on mount
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const name = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "there";
+        setUser({ name, email: session.user.email ?? "" });
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const name = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "there";
+        setUser({ name, email: session.user.email ?? "" });
+      } else {
+        setUser(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
-  // Scroll to top on section change
   useEffect(() => { mainRef.current?.scrollTo(0, 0); }, [active]);
 
   const navigate = (id: SectionId) => { setActive(id); setSidebarOpen(false); };
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setUser(null);
+  }
 
   return (
     <>
@@ -922,6 +951,26 @@ export default function AIMoneyMentor() {
             </div>
           ))}
           <div style={{ marginTop: "auto", padding: "16px", borderTop: `1px solid rgba(201,169,78,0.15)` }}>
+            {user ? (
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "white", border: `2px solid ${C.gold}`, flexShrink: 0 }}>
+                    {user.name[0].toUpperCase()}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.goldLight, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</div>
+                    <div style={{ fontSize: 10, color: "rgba(200,217,168,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                  </div>
+                </div>
+                <button onClick={signOut} style={{ width: "100%", padding: "7px", background: "rgba(201,169,78,0.12)", border: `1px solid rgba(201,169,78,0.2)`, borderRadius: 9, color: C.sageMid, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setShowAuth(true)} style={{ width: "100%", padding: "9px", background: C.gold, border: "none", borderRadius: 10, color: C.forestDeep, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "DM Sans, sans-serif", marginBottom: 10 }}>
+                Sign In / Create Account
+              </button>
+            )}
             <div style={{ fontSize: 10.5, color: "rgba(200,217,168,0.4)", lineHeight: 1.5 }}>
               ⚠️ Educational purposes only. Not licensed financial advice. Consult a professional for major decisions.
             </div>
@@ -955,7 +1004,15 @@ export default function AIMoneyMentor() {
           <div className="mobile-topbar">
             <button onClick={() => setSidebarOpen(true)} style={{ background: "none", border: "none", cursor: "pointer", color: C.sageMid, fontSize: 22, display: "flex", alignItems: "center", padding: 4 }}>☰</button>
             <CharlotteLogo size={28} showText={true} />
-            <div style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "white", border: `2px solid ${C.gold}` }}>P</div>
+            {user ? (
+              <button onClick={signOut} title="Sign out" style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "white", border: `2px solid ${C.gold}`, cursor: "pointer" }}>
+                {user.name[0].toUpperCase()}
+              </button>
+            ) : (
+              <button onClick={() => setShowAuth(true)} style={{ padding: "5px 10px", background: C.gold, color: C.forestDeep, border: "none", borderRadius: 14, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
+                Sign In
+              </button>
+            )}
           </div>
 
           {/* Disclaimer */}
@@ -964,7 +1021,7 @@ export default function AIMoneyMentor() {
           {/* Section content */}
           <div className="content-scroll fade-in" ref={mainRef} key={active}
             style={{ display: "flex", flexDirection: "column", ...(active === "charlotte" ? { height: "calc(100vh - 110px)", overflow: "hidden" } : {}) }}>
-            {renderSection(active, navigate, active)}
+            {renderSection(active, navigate, active, !!user)}
           </div>
 
           {/* Mobile bottom nav */}
@@ -983,6 +1040,13 @@ export default function AIMoneyMentor() {
           </nav>
         </div>
       </div>
+
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onSuccess={(name) => { setUser({ name, email: "" }); setShowAuth(false); }}
+        />
+      )}
     </>
   );
 }
