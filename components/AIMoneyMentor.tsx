@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase-client";
 import dynamic from "next/dynamic";
 import CharlotteLogo from "./Logo";
+import NavIcon from "./NavIcon";
 
 const GoalsSection    = dynamic(() => import("./GoalsSection"),    { ssr: false });
 const LinksSection    = dynamic(() => import("./LinksSection"),    { ssr: false });
@@ -153,13 +154,14 @@ function Disclaimer({ onDismiss }: { onDismiss: () => void }) {
   );
 }
 
-function HeroSection({ title, subtitle, emoji, children }: { title: string; subtitle?: string; emoji?: string; children?: React.ReactNode }) {
+function HeroSection({ title, subtitle, icon, children }: { title: string; subtitle?: string; icon?: string; children?: React.ReactNode }) {
   return (
     <div style={{ background: `linear-gradient(160deg, ${C.forestDeep} 0%, ${C.forest} 60%, ${C.forestMid} 100%)`, padding: "24px 20px 30px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -50, right: -50, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,169,78,0.12) 0%, transparent 70%)" }} />
       <div style={{ color: C.sageMid, fontSize: 12, marginBottom: 3 }}>{subtitle}</div>
-      <div style={{ fontFamily: "'Playfair Display', serif", color: "white", fontSize: 22, fontWeight: 700, marginBottom: children ? 14 : 0 }}>
-        {emoji} {title}
+      <div style={{ fontFamily: "'Playfair Display', serif", color: "white", fontSize: 22, fontWeight: 700, marginBottom: children ? 14 : 0, display: "flex", alignItems: "center", gap: 10 }}>
+        {icon && <NavIcon id={icon} size={22} color="rgba(255,255,255,0.9)" strokeWidth={1.6} />}
+        {title}
       </div>
       {children}
     </div>
@@ -263,7 +265,7 @@ function HomeTab({ onNavigate }: { onNavigate: (id: SectionId) => void }) {
   const currentLevel = CURRICULUM[2];
   return (
     <div>
-      <HeroSection title="Welcome back, Paula 👋" subtitle="Good morning" emoji="">
+      <HeroSection title="Welcome back, Paula 👋" subtitle="Good morning" icon="home">
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
           <CharlotteAvatar state="greeting" size={68} showBubble={true} message="Good morning! Ready to level up your money game today? 💚" />
         </div>
@@ -306,7 +308,7 @@ function HomeTab({ onNavigate }: { onNavigate: (id: SectionId) => void }) {
               style={{ background: C.cardBg, border: `1px solid ${C.border}`, borderRadius: 13, padding: 13, cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 18px rgba(14,61,34,0.1)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = ""; }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>{item.icon}</div>
+              <div style={{ marginBottom: 7 }}><NavIcon id={item.id} size={26} color={C.forest} strokeWidth={1.5} /></div>
               <div style={{ fontSize: 12, fontWeight: 600, color: C.forest }}>{item.label}</div>
             </div>
           ))}
@@ -321,7 +323,7 @@ function BudgetTab() {
   const budgetTotal = BUDGET_ITEMS.reduce((s, i) => s + i.total, 0);
   return (
     <div>
-      <HeroSection title="April 2026" subtitle="Budget Builder" emoji="📊">
+      <HeroSection title="April 2026" subtitle="Budget Builder" icon="budget">
         <div style={{ color: C.sageMid, fontSize: 13 }}>Income: <strong style={{ color: "white" }}>$2,100</strong> &nbsp;|&nbsp; Spent: <strong style={{ color: C.goldLight }}>${total}</strong></div>
       </HeroSection>
       <div style={{ padding: "18px 18px 0" }}>
@@ -358,7 +360,7 @@ function LearnTab() {
 
   return (
     <div>
-      <HeroSection title="Learn & Earn Points" subtitle="Financial Literacy" emoji="📚">
+      <HeroSection title="Learn & Earn Points" subtitle="Financial Literacy" icon="learn">
         <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
           <div style={{ color: C.goldLight, fontSize: 12 }}>⭐ {userXP} XP earned</div>
           <div style={{ color: C.sageMid, fontSize: 12 }}>{currentLevel.badge} {currentLevel.name}</div>
@@ -413,7 +415,7 @@ function ProgressTab() {
   ];
   return (
     <div>
-      <HeroSection title="Paula's Journey" subtitle="Your Achievements" emoji="">
+      <HeroSection title="Paula's Journey" subtitle="Your Achievements" icon="progress">
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 10px", border: `3px solid ${C.goldLight}` }}>P</div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: `linear-gradient(135deg, ${C.gold}, ${C.goldLight})`, color: C.forestDeep, padding: "5px 13px", borderRadius: 18, fontSize: 11, fontWeight: 700, marginBottom: 12 }}>
@@ -469,7 +471,7 @@ function GoalSection({ icon, title, intro, tips, quizKey, apis, curriculum }: {
 }) {
   return (
     <div>
-      <HeroSection title={title} subtitle="Life Goals" emoji={icon} />
+      <HeroSection title={title} subtitle="Life Goals" icon={icon} />
       <div style={{ padding: "18px 18px 0" }}>
         <Card style={{ background: "#f7fdf2", borderColor: C.sageDark }}>
           <p style={{ fontSize: 13.5, color: C.text, lineHeight: 1.6 }}>{intro}</p>
@@ -560,7 +562,7 @@ function CharlotteTab({ currentSection }: { currentSection: SectionId }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
-      <HeroSection title="Charlotte" subtitle="AI Money Mentor • Always here" emoji="✨">
+      <HeroSection title="Charlotte" subtitle="AI Money Mentor • Always here" icon="charlotte">
         <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
           <CharlotteAvatar state={loading ? "thinking" : "idle"} size={72} />
         </div>
@@ -613,7 +615,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
     case "links":     return <LinksSection isLoggedIn={isLoggedIn} />;
 
     case "home-buying":
-      return <GoalSection icon="🏡" title="Buying a Home" quizKey="home-buying"
+      return <GoalSection icon="home-buying" title="Buying a Home" quizKey="home-buying"
         intro="Buying a home is one of the biggest financial decisions you'll make. Charlotte will walk you through each step — from saving your down payment to understanding mortgage rates."
         tips={[
           "Before we talk home buying — do you have 3-6 months of emergency savings? That's the foundation everything else is built on.",
@@ -633,7 +635,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "credit":
-      return <GoalSection icon="💳" title="Credit & Debt" quizKey="credit"
+      return <GoalSection icon="credit" title="Credit & Debt" quizKey="credit"
         intro="Your credit score is a financial GPA — it determines the interest rates you pay on everything from car loans to mortgages. Charlotte can help you build and protect it."
         tips={[
           "Tell me: do you know your current credit score? (Credit Karma is free to check!)",
@@ -653,7 +655,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "investments":
-      return <GoalSection icon="📈" title="Investments" quizKey="investments"
+      return <GoalSection icon="investments" title="Investments" quizKey="investments"
         intro="Investing grows your money over time through the power of compound interest. Charlotte starts with your foundation before unlocking advanced strategies. Remember: never invest money you can't afford to lose, and this is education — not investment advice."
         tips={[
           "Important question first: do you have a 3-6 month emergency fund and no high-interest debt? That comes before investing.",
@@ -673,7 +675,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "retirement":
-      return <GoalSection icon="🎯" title="Retirement" quizKey="retirement"
+      return <GoalSection icon="retirement" title="Retirement" quizKey="retirement"
         intro="Retirement may feel far away, but time is your biggest asset. Starting at 25 instead of 35 can mean hundreds of thousands of extra dollars — Charlotte will show you the math."
         tips={[
           "Quick check: does your employer offer a 401(k) match? If yes — are you contributing enough to get the full match?",
@@ -693,7 +695,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "education-529":
-      return <GoalSection icon="🎓" title="529 College Savings" quizKey="education-529"
+      return <GoalSection icon="education-529" title="529 College Savings" quizKey="education-529"
         intro="529 plans are one of the most powerful education savings tools — tax-free growth, now usable for K-12, trade schools, and even rolling into a Roth IRA under new law."
         tips={[
           "Tell me: are you saving for a child, grandchild, or yourself? The strategy changes depending on who the beneficiary is.",
@@ -712,7 +714,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "taxes-personal":
-      return <GoalSection icon="📝" title="Personal Taxes" quizKey="taxes-personal"
+      return <GoalSection icon="taxes-personal" title="Personal Taxes" quizKey="taxes-personal"
         intro="Taxes don't have to be scary. Charlotte breaks down exactly what you owe, what you can deduct, and — most importantly — how to keep more of your money legally."
         tips={[
           "Quick question: did you file your taxes last year? If you earned income, always file — even if you're not sure you owe. You may be owed money back!",
@@ -732,7 +734,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "taxes-business":
-      return <GoalSection icon="🏢" title="Business Taxes" quizKey="budget"
+      return <GoalSection icon="taxes-business" title="Business Taxes" quizKey="budget"
         intro="Running a business? Your tax situation changes significantly. Charlotte helps you understand business structures, self-employment tax, quarterly payments, and how to deduct legally."
         tips={[
           "Are you freelancing, running a side hustle, or operating a full business? The answer determines your tax structure.",
@@ -752,7 +754,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "estate-planning":
-      return <GoalSection icon="🏛️" title="Estate Planning"
+      return <GoalSection icon="estate-planning" title="Estate Planning"
         intro="Estate planning isn't just for the wealthy — it's for everyone who has people they love. Charlotte guides you through the essential documents and how to protect your family."
         tips={[
           "Tell me: do you have dependents — a child, spouse, or elderly parent who relies on you financially?",
@@ -931,7 +933,7 @@ export default function AIMoneyMentor() {
               <div className="sidebar-group-label">{group.label}</div>
               {group.items.map(item => (
                 <div key={item.id} className={`sidebar-item${active === item.id ? " active" : ""}`} onClick={() => navigate(item.id)}>
-                  <span className="sidebar-icon">{item.icon}</span>
+                  <span className="sidebar-icon"><NavIcon id={item.id} size={17} color={active === item.id ? C.goldLight : "rgba(200,217,168,0.65)"} /></span>
                   <span>{item.label}</span>
                 </div>
               ))}
@@ -969,14 +971,14 @@ export default function AIMoneyMentor() {
           <div className="sidebar-drawer" onClick={e => e.stopPropagation()}>
             <div style={{ padding: "18px 16px 14px", borderBottom: `1px solid rgba(201,169,78,0.2)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <CharlotteLogo size={32} showText={true} dark={true} />
-              <button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.sageMid, fontSize: 20, padding: 4 }}>✕</button>
+              <button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.sageMid, padding: 4, display:"flex" }}><NavIcon id="close" size={20} color={C.sageMid} /></button>
             </div>
             {NAV_GROUPS.map(group => (
               <div key={group.label}>
                 <div className="sidebar-group-label">{group.label}</div>
                 {group.items.map(item => (
                   <div key={item.id} className={`sidebar-item${active === item.id ? " active" : ""}`} onClick={() => navigate(item.id)}>
-                    <span className="sidebar-icon">{item.icon}</span>
+                    <span className="sidebar-icon"><NavIcon id={item.id} size={17} color={active === item.id ? C.goldLight : "rgba(200,217,168,0.65)"} /></span>
                     <span>{item.label}</span>
                   </div>
                 ))}
@@ -989,7 +991,7 @@ export default function AIMoneyMentor() {
         <div className="main-content">
           {/* Mobile top bar */}
           <div className="mobile-topbar">
-            <button onClick={() => setSidebarOpen(true)} style={{ background: "none", border: "none", cursor: "pointer", color: C.sageMid, fontSize: 22, display: "flex", alignItems: "center", padding: 4 }}>☰</button>
+            <button onClick={() => setSidebarOpen(true)} style={{ background: "none", border: "none", cursor: "pointer", color: C.sageMid, display: "flex", alignItems: "center", padding: 4 }}><NavIcon id="menu" size={22} color={C.sageMid} /></button>
             <CharlotteLogo size={28} showText={true} dark={true} />
             {user ? (
               <button onClick={signOut} title="Sign out" style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "white", border: `2px solid ${C.gold}`, cursor: "pointer" }}>
@@ -1015,13 +1017,12 @@ export default function AIMoneyMentor() {
           <nav className="bottom-nav-mobile">
             {MOBILE_BOTTOM.map(item => (
               <button key={item.id} className={`bottom-nav-btn${active === item.id ? " active" : ""}`} onClick={() => navigate(item.id)}>
-                <span className="bottom-nav-icon">{item.icon}</span>
+                <span className="bottom-nav-icon"><NavIcon id={item.id} size={22} color={active === item.id ? C.goldLight : C.sageMid} /></span>
                 <span className="bottom-nav-label">{item.short}</span>
               </button>
             ))}
-            {/* "More" button opens sidebar */}
             <button className={`bottom-nav-btn${NAV_GROUPS[1].items.some(i => i.id === active) ? " active" : ""}`} onClick={() => setSidebarOpen(true)}>
-              <span className="bottom-nav-icon">⋯</span>
+              <span className="bottom-nav-icon"><NavIcon id="more" size={22} color={NAV_GROUPS[1].items.some(i => i.id === active) ? C.goldLight : C.sageMid} /></span>
               <span className="bottom-nav-label">More</span>
             </button>
           </nav>
