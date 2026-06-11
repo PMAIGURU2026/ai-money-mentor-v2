@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase-client";
 import dynamic from "next/dynamic";
+import CharlotteLogo from "./Logo";
 
 const GoalsSection = dynamic(() => import("./GoalsSection"), { ssr: false });
 const LinksSection = dynamic(() => import("./LinksSection"), { ssr: false });
@@ -136,35 +137,7 @@ const BUDGET_ITEMS = [
   { cat: "Personal", spent: 85, total: 100, color: "#5a9a6a" },
 ];
 
-/* ─────────────── LOGO COMPONENT ─────────────── */
-function CharlotteLogo({ size = 40, showText = false }: { size?: number; showText?: boolean }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: showText ? 10 : 0 }}>
-      <img
-        src="/aimm-logo-v2.png"
-        alt="AI Money Mentor logo"
-        style={{
-          height: size * 1.6,
-          width: "auto",
-          objectFit: "contain",
-          borderRadius: 8,
-          background: "#e8f0d8",
-          padding: "2px 6px",
-        }}
-      />
-      {showText && (
-        <div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: C.goldLight, fontSize: size * 0.38, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.3px" }}>
-            AI Money Mentor
-          </div>
-          <div style={{ fontSize: size * 0.2, fontFamily: "DM Sans, sans-serif", color: C.sageMid, fontWeight: 300, letterSpacing: "1px", textTransform: "uppercase" }}>
-            with Charlotte
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+/* CharlotteLogo is imported from ./Logo */
 
 /* ─────────────── SHARED UI ─────────────── */
 function Disclaimer({ onDismiss }: { onDismiss: () => void }) {
@@ -937,7 +910,7 @@ export default function AIMoneyMentor() {
         {/* ── DESKTOP SIDEBAR ── */}
         <aside className="sidebar">
           <div className="sidebar-logo">
-            <CharlotteLogo size={36} showText={true} />
+            <CharlotteLogo size={36} showText={true} dark={true} />
           </div>
           {NAV_GROUPS.map(group => (
             <div key={group.label}>
@@ -981,7 +954,7 @@ export default function AIMoneyMentor() {
         <div className={`sidebar-overlay${sidebarOpen ? " open" : ""}`} onClick={() => setSidebarOpen(false)}>
           <div className="sidebar-drawer" onClick={e => e.stopPropagation()}>
             <div style={{ padding: "18px 16px 14px", borderBottom: `1px solid rgba(201,169,78,0.2)`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <CharlotteLogo size={32} showText={true} />
+              <CharlotteLogo size={32} showText={true} dark={true} />
               <button onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.sageMid, fontSize: 20, padding: 4 }}>✕</button>
             </div>
             {NAV_GROUPS.map(group => (
@@ -1003,7 +976,7 @@ export default function AIMoneyMentor() {
           {/* Mobile top bar */}
           <div className="mobile-topbar">
             <button onClick={() => setSidebarOpen(true)} style={{ background: "none", border: "none", cursor: "pointer", color: C.sageMid, fontSize: 22, display: "flex", alignItems: "center", padding: 4 }}>☰</button>
-            <CharlotteLogo size={28} showText={true} />
+            <CharlotteLogo size={28} showText={true} dark={true} />
             {user ? (
               <button onClick={signOut} title="Sign out" style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "white", border: `2px solid ${C.gold}`, cursor: "pointer" }}>
                 {user.name[0].toUpperCase()}

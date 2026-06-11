@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-client";
+import CharlotteLogo from "./Logo";
 
 const C = { forest: "#1a5c35", forestDeep: "#0e3d22", gold: "#c9a94e", goldLight: "#e8c97a", sageMid: "#c8d9a8", white: "#fafdf5", cardBg: "#f0f7e6", border: "#d5e8c0", text: "#0e2d1a", textLight: "#3a6b4a", textMuted: "#6b9a7a", red: "#c0392b" };
 
@@ -49,7 +50,9 @@ export default function AuthModal({ onClose, onSuccess }: { onClose: () => void;
       <div style={{ background: C.white, borderRadius: 20, padding: 28, width: "100%", maxWidth: 400, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
         {/* Logo area */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <img src="/aimm-logo-v2.png" alt="AI Money Mentor" style={{ height: 70, objectFit: "contain", background: "#e8f0d8", borderRadius: 10, padding: "4px 10px" }} />
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
+            <CharlotteLogo size={32} showText={true} dark={false} />
+          </div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: C.forestDeep, marginTop: 10 }}>
             {mode === "signup" ? "Create your account" : mode === "magic" ? "Sign in with email link" : "Welcome back"}
           </div>

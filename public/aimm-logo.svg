@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 230" fill="none">
+  <!-- Bulb globe ring (gold) -->
+  <circle cx="95" cy="88" r="68" stroke="#c9a94e" stroke-width="10"/>
+
+  <!-- Dollar sign inside bulb -->
+  <text x="97" y="114" text-anchor="middle" font-size="64" font-weight="900"
+        font-family="Georgia, 'Times New Roman', serif" fill="#1a5c35">$</text>
+
+  <!-- Left large leaf -->
+  <path d="M 86 102 C 65 76 32 66 16 44 C 34 62 60 76 86 102 Z" fill="#1a5c35"/>
+
+  <!-- Right large leaf -->
+  <path d="M 104 92 C 124 66 160 54 174 32 C 156 50 130 66 104 92 Z" fill="#1a5c35"/>
+
+  <!-- Small inner left leaf -->
+  <path d="M 84 116 C 68 102 48 94 38 78 C 54 90 72 100 84 116 Z" fill="#1a5c35"/>
+
+  <!-- Plant stem -->
+  <line x1="95" y1="156" x2="95" y2="96"
+        stroke="#1a5c35" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Bulb base bars (gold, narrowing) -->
+  <rect x="68" y="156" width="54" height="11" rx="5.5" fill="#c9a94e"/>
+  <rect x="75" y="171" width="40" height="10" rx="5"   fill="#c9a94e"/>
+  <rect x="82" y="185" width="26" height="10" rx="5"   fill="#c9a94e"/>
+
+  <!-- Wordmark: AI Money Mentor -->
+  <text x="200" y="88"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="72" font-weight="700" fill="#1a5c35" letter-spacing="-1">AI</text>
+  <text x="200" y="154"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="72" font-weight="700" fill="#1a5c35" letter-spacing="-1">Money</text>
+  <text x="200" y="218"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="72" font-weight="700" fill="#1a5c35" letter-spacing="-1">Mentor</text>
+
+  <!-- Tagline -->
+  <text x="200" y="240"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="22" fill="#2d7a4a">Your Financial Education Partner</text>
+</svg>
