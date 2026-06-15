@@ -10,6 +10,20 @@ const LinksSection    = dynamic(() => import("./LinksSection"),    { ssr: false 
 const AuthModal       = dynamic(() => import("./AuthModal"),       { ssr: false });
 const CharlotteAvatar = dynamic(() => import("./CharlotteAvatar"), { ssr: false });
 
+function GoldStar({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "middle", flexShrink: 0 }}>
+      <defs>
+        <linearGradient id="gstarGrad" x1="0" y1="0" x2="24" y2="24">
+          <stop offset="0%" stopColor="#e8c97a" />
+          <stop offset="100%" stopColor="#a07820" />
+        </linearGradient>
+      </defs>
+      <path d="M12 2L13.9 10.1L22 12L13.9 13.9L12 22L10.1 13.9L2 12L10.1 10.1Z" fill="url(#gstarGrad)" />
+    </svg>
+  );
+}
+
 /* ─────────────── DESIGN TOKENS ─────────────── */
 const C = {
   sage: "#e8f0d8",
@@ -132,11 +146,11 @@ const QUIZ_BANK: Record<string, { q: string; options: string[]; correct: number;
 
 /* ─────────────── STATIC DATA ─────────────── */
 const BUDGET_ITEMS = [
-  { cat: "Housing", spent: 950, total: 1000, color: C.forest },
-  { cat: "Food & Groceries", spent: 280, total: 350, color: C.gold },
-  { cat: "Transportation", spent: 120, total: 150, color: C.forestMid },
-  { cat: "Emergency Fund", spent: 200, total: 200, color: C.goldLight },
-  { cat: "Personal", spent: 85, total: 100, color: "#5a9a6a" },
+  { cat: "Housing",          spent: 0, total: 0, color: C.forest },
+  { cat: "Food & Groceries", spent: 0, total: 0, color: C.gold },
+  { cat: "Transportation",   spent: 0, total: 0, color: C.forestMid },
+  { cat: "Emergency Fund",   spent: 0, total: 0, color: C.goldLight },
+  { cat: "Personal",         spent: 0, total: 0, color: "#5a9a6a" },
 ];
 
 /* CharlotteLogo is imported from ./Logo */
@@ -156,7 +170,7 @@ function Disclaimer({ onDismiss }: { onDismiss: () => void }) {
 
 function HeroSection({ title, subtitle, icon, children }: { title: string; subtitle?: string; icon?: string; children?: React.ReactNode }) {
   return (
-    <div style={{ background: `linear-gradient(160deg, ${C.forestDeep} 0%, ${C.forest} 60%, ${C.forestMid} 100%)`, padding: "24px 20px 30px", position: "relative", overflow: "hidden" }}>
+    <div style={{ background: `linear-gradient(160deg, ${C.forestDeep} 0%, ${C.forest} 60%, ${C.forestMid} 100%)`, padding: "12px 20px 14px", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -50, right: -50, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,169,78,0.12) 0%, transparent 70%)" }} />
       <div style={{ color: C.sageMid, fontSize: 12, marginBottom: 3 }}>{subtitle}</div>
       <div style={{ fontFamily: "'Playfair Display', serif", color: "white", fontSize: 22, fontWeight: 700, marginBottom: children ? 14 : 0, display: "flex", alignItems: "center", gap: 10 }}>
@@ -191,9 +205,97 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function CharlotteTip({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ background: `linear-gradient(135deg, ${C.forestDeep}, ${C.forest})`, borderRadius: 16, padding: "16px 18px", margin: "0 0 14px", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", right: 12, top: 12, fontSize: 28, opacity: 0.25 }}>🌿</div>
-      <div style={{ background: C.gold, color: C.forestDeep, fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: "3px 9px", borderRadius: 8, display: "inline-block", marginBottom: 7 }}>Charlotte's Tip</div>
+      <div style={{ position: "absolute", right: 12, top: 10, opacity: 0.3 }}><GoldStar size={26} /></div>
+      <div style={{ background: C.gold, color: C.forestDeep, fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: "3px 9px", borderRadius: 8, display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 7 }}><GoldStar size={10} /> Charlotte's Tip</div>
       <div style={{ background: "rgba(255,255,255,0.1)", borderLeft: `3px solid ${C.gold}`, borderRadius: "0 9px 9px 0", padding: "10px 12px", color: C.sageMid, fontSize: 13, lineHeight: 1.55 }}>{children}</div>
+    </div>
+  );
+}
+
+// ── Live Market Snapshot (Alpha Vantage) ──────────────────────────────────
+function StockTicker() {
+  const [quotes, setQuotes] = useState<{ symbol: string; label: string; price: string; change: string; changePercent: string; isPositive: boolean }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ts, setTs] = useState<number | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/stocks")
+      .then(r => r.json())
+      .then(d => { if (d.quotes) { setQuotes(d.quotes); setTs(d.ts); } else setError("Market data unavailable"); })
+      .catch(() => setError("Market data unavailable"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div style={{ background: `linear-gradient(135deg, ${C.forestDeep} 0%, #0a2e18 100%)`, border: `1px solid rgba(201,169,78,0.3)`, borderRadius: 14, padding: "14px 16px", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <GoldStar size={13} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" }}>Live Market Snapshot</span>
+        </div>
+        {ts && <span style={{ fontSize: 10, color: C.sageMid }}>Updated {new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+      </div>
+      {loading && <div style={{ color: C.sageMid, fontSize: 12 }}>Loading market data…</div>}
+      {error && <div style={{ color: "#f87171", fontSize: 12 }}>{error}</div>}
+      {!loading && !error && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+          {quotes.map(q => (
+            <div key={q.symbol} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 12px", border: `1px solid ${q.isPositive ? "rgba(74,222,128,0.2)" : "rgba(248,113,113,0.2)"}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "white" }}>{q.symbol}</div>
+                  <div style={{ fontSize: 10, color: C.sageMid, marginTop: 1 }}>{q.label}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>${q.price}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: q.isPositive ? "#4ade80" : "#f87171" }}>{q.changePercent}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ fontSize: 10, color: C.textMuted, marginTop: 10 }}>Data via Alpha Vantage • For educational purposes only • Not investment advice</div>
+    </div>
+  );
+}
+
+// ── Live Mortgage Rates (FRED) ────────────────────────────────────────────
+function MortgageRates() {
+  const [rates, setRates] = useState<{ rate30: string; rate15: string; asOf: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/mortgage")
+      .then(r => r.json())
+      .then(d => { if (d.rate30) setRates(d); else setError("Rate data unavailable"); })
+      .catch(() => setError("Rate data unavailable"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div style={{ background: `linear-gradient(135deg, ${C.forestDeep} 0%, #0a2e18 100%)`, border: `1px solid rgba(201,169,78,0.3)`, borderRadius: 14, padding: "14px 16px", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <GoldStar size={13} />
+        <span style={{ fontSize: 11, fontWeight: 700, color: C.gold, letterSpacing: "1px", textTransform: "uppercase" }}>Current Mortgage Rates</span>
+      </div>
+      {loading && <div style={{ color: C.sageMid, fontSize: 12 }}>Loading rates…</div>}
+      {error && <div style={{ color: "#f87171", fontSize: 12 }}>{error}</div>}
+      {!loading && !error && rates && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(201,169,78,0.15)", textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: C.goldLight }}>{rates.rate30}%</div>
+            <div style={{ fontSize: 11, color: C.sageMid, marginTop: 3 }}>30-Year Fixed</div>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(201,169,78,0.15)", textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: C.goldLight }}>{rates.rate15}%</div>
+            <div style={{ fontSize: 11, color: C.sageMid, marginTop: 3 }}>15-Year Fixed</div>
+          </div>
+          <div style={{ gridColumn: "1/-1", fontSize: 11, color: C.textMuted }}>Source: Federal Reserve (FRED) • Updated weekly • Week of {rates.asOf}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -260,26 +362,167 @@ function QuizWidget({ sectionKey }: { sectionKey: string }) {
 
 /* ─────────────── TAB CONTENT ─────────────── */
 
-function HomeTab({ onNavigate }: { onNavigate: (id: SectionId) => void }) {
-  const userXP = 340;
-  const currentLevel = CURRICULUM[2];
+/* Guest landing auth card — shown in hero when no user is signed in */
+function GuestAuthCard({ onAuthSuccess }: { onAuthSuccess: (id: string, name: string) => void }) {
+  const supabase = createClient();
+  const [siEmail, setSiEmail] = useState("");
+  const [siPassword, setSiPassword] = useState("");
+  const [suName, setSuName] = useState("");
+  const [suEmail, setSuEmail] = useState("");
+  const [suPassword, setSuPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const inp: React.CSSProperties = {
+    width: "100%", padding: "7px 10px",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(201,169,78,0.22)",
+    borderRadius: 7, color: "white", fontSize: 12,
+    fontFamily: "DM Sans, sans-serif", outline: "none", marginBottom: 6,
+    boxSizing: "border-box",
+  };
+
+  const handleSignIn = async () => {
+    if (!siEmail || !siPassword) { setError("Enter your email and password."); return; }
+    setLoading(true); setError("");
+    const { data, error: e } = await supabase.auth.signInWithPassword({ email: siEmail, password: siPassword });
+    setLoading(false);
+    if (e) { setError(e.message); return; }
+    const name = data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0] || "there";
+    onAuthSuccess(data.user?.id ?? "", name);
+  };
+
+  const handleSignUp = async () => {
+    if (!suName || !suEmail || !suPassword) { setError("Please fill in all fields."); return; }
+    setLoading(true); setError("");
+    const { data, error: e } = await supabase.auth.signUp({
+      email: suEmail, password: suPassword,
+      options: { data: { full_name: suName } },
+    });
+    setLoading(false);
+    if (e) { setError(e.message); return; }
+    const name = suName || data.user?.email?.split("@")[0] || "there";
+    onAuthSuccess(data.user?.id ?? "", name);
+  };
+
+  return (
+    <div style={{ flex: 1, background: "rgba(0,0,0,0.28)", border: "1px solid rgba(201,169,78,0.28)", borderRadius: 15, padding: "14px 16px", backdropFilter: "blur(8px)", minWidth: 0 }}>
+      <div style={{ fontFamily: "'Playfair Display', serif", color: "white", fontSize: 15, fontWeight: 700, marginBottom: 1 }}>Welcome to AI Money Mentor</div>
+      <div style={{ color: C.sageMid, fontSize: 10.5, marginBottom: 11 }}>Your financial journey starts here</div>
+
+      {error && <div style={{ background: "rgba(192,57,43,0.18)", border: "1px solid rgba(192,57,43,0.4)", borderRadius: 7, padding: "6px 9px", color: "#f87171", fontSize: 11, marginBottom: 9 }}>{error}</div>}
+
+      <div style={{ color: C.goldLight, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, marginBottom: 6 }}>SIGN IN</div>
+      <input type="email" placeholder="Email" value={siEmail} onChange={e => setSiEmail(e.target.value)} style={inp} />
+      <input type="password" placeholder="Password" value={siPassword} onChange={e => setSiPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSignIn()} style={{ ...inp, marginBottom: 8 }} />
+      <button onClick={handleSignIn} disabled={loading}
+        style={{ width: "100%", padding: "7px", background: `linear-gradient(135deg, ${C.gold}, ${C.goldLight})`, border: "none", borderRadius: 8, color: C.forestDeep, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "DM Sans, sans-serif", marginBottom: 10 }}>
+        {loading ? "…" : "Sign In"}
+      </button>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+        <div style={{ flex: 1, height: 1, background: "rgba(201,169,78,0.18)" }} />
+        <span style={{ fontSize: 9.5, color: "rgba(200,217,168,0.4)", fontWeight: 600 }}>OR</span>
+        <div style={{ flex: 1, height: 1, background: "rgba(201,169,78,0.18)" }} />
+      </div>
+
+      <div style={{ color: C.sageMid, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, marginBottom: 6 }}>CREATE FREE ACCOUNT</div>
+      <input type="text" placeholder="Full name" value={suName} onChange={e => setSuName(e.target.value)} style={inp} />
+      <input type="email" placeholder="Email" value={suEmail} onChange={e => setSuEmail(e.target.value)} style={inp} />
+      <input type="password" placeholder="Create a password" value={suPassword} onChange={e => setSuPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSignUp()} style={{ ...inp, marginBottom: 8 }} />
+      <button onClick={handleSignUp} disabled={loading}
+        style={{ width: "100%", padding: "7px", background: C.forestMid, border: `1px solid rgba(201,169,78,0.25)`, borderRadius: 8, color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "DM Sans, sans-serif", marginBottom: 8 }}>
+        {loading ? "…" : "Create Free Account"}
+      </button>
+
+      <div style={{ fontSize: 9.5, color: "rgba(200,217,168,0.35)", lineHeight: 1.4, textAlign: "center" }}>
+        Educational purposes only. Charlotte is not a licensed financial advisor.
+      </div>
+    </div>
+  );
+}
+
+function HomeTab({ onNavigate, userName, isLoggedIn, onAuthSuccess, userXP, budgetSpent, budgetTotal, efPct, flScore }: {
+  onNavigate: (id: SectionId) => void;
+  userName?: string;
+  isLoggedIn: boolean;
+  onAuthSuccess: (id: string, name: string) => void;
+  userXP: number;
+  budgetSpent: number;
+  budgetTotal: number;
+  efPct: number;
+  flScore: number;
+}) {
+  const currentLevelIdx = Math.max(0, CURRICULUM.findIndex(l => l.xp > userXP) - 1);
+  const currentLevel = CURRICULUM[currentLevelIdx];
+
+  /* ── GUEST STATE ─────────────────────────────────────────────────────── */
+  if (!isLoggedIn) {
+    return (
+      <div>
+        <div style={{ background: `linear-gradient(160deg, ${C.forestDeep} 0%, ${C.forest} 60%, ${C.forestMid} 100%)`, display: "flex", alignItems: "stretch", overflow: "hidden", position: "relative", minHeight: 380 }}>
+          <div style={{ position: "absolute", top: -40, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,169,78,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+          {/* Left: Charlotte avatar + auth card side by side */}
+          <div style={{ flex: 1, padding: "20px 16px", display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+            <div style={{ flexShrink: 0 }}>
+              <CharlotteAvatar state="greeting" size={88} showBubble={true} message="Hi! I'm Charlotte. Sign in to start your financial journey! 💚" />
+            </div>
+            <GuestAuthCard onAuthSuccess={onAuthSuccess} />
+          </div>
+
+          {/* LOCKED — DO NOT CHANGE: right panel charlotte.png */}
+          <div style={{ width: 300, flexShrink: 0, alignSelf: "stretch", overflow: "hidden" }}>
+            <img src="/charlotte.png" alt="Charlotte at her desk" style={{ width: "100%", height: "auto", display: "block" }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── LOGGED-IN STATE — full dashboard ────────────────────────────────── */
   return (
     <div>
-      <HeroSection title="Welcome back, Paula 👋" subtitle="Good morning" icon="home">
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <CharlotteAvatar state="greeting" size={68} showBubble={true} message="Good morning! Ready to level up your money game today? 💚" />
-        </div>
-        <div style={{ background: "rgba(255,255,255,0.1)", border: `1px solid rgba(201,169,78,0.3)`, borderRadius: 14, padding: 16, backdropFilter: "blur(10px)" }}>
-          <div style={{ color: C.sageMid, fontSize: 10, letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>Monthly Budget</div>
-          <div style={{ color: "white", fontSize: 30, fontWeight: 600, fontFamily: "'Playfair Display', serif" }}>
-            <span style={{ color: C.goldLight, fontSize: 16 }}>$</span>1,635 <span style={{ color: C.sageMid, fontSize: 13 }}>of $1,800</span>
+      {/* Home welcome — dark green, Charlotte avatar left, full studio image right */}
+      <div style={{ background: `linear-gradient(160deg, ${C.forestDeep} 0%, ${C.forest} 60%, ${C.forestMid} 100%)`, display: "flex", alignItems: "flex-start", overflow: "hidden", position: "relative" }}>
+        <div style={{ position: "absolute", top: -40, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,169,78,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+        {/* Left: title + avatar + budget */}
+        <div style={{ flex: 1, padding: "12px 16px 16px 20px", minWidth: 360 }}>
+          <div style={{ color: C.sageMid, fontSize: 12, marginBottom: 3 }}>Good morning</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: "white", fontSize: 22, fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+            <NavIcon id="home" size={22} color="rgba(255,255,255,0.9)" strokeWidth={1.6} />
+            {`Welcome back, ${userName} 👋`}
           </div>
-          <div style={{ color: C.sageMid, fontSize: 12, marginTop: 3 }}>$165 remaining this month</div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: `linear-gradient(135deg, ${C.gold}, ${C.goldLight})`, color: C.forestDeep, padding: "5px 12px", borderRadius: 18, fontSize: 11, fontWeight: 700, marginTop: 11 }}>
-            {currentLevel.badge} Level {currentLevel.level} — {currentLevel.name}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+            <CharlotteAvatar state="greeting" size={96} showBubble={true} message="Good morning! Ready to level up your money game today?" />
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.1)", border: `1px solid rgba(201,169,78,0.3)`, borderRadius: 14, padding: 14, backdropFilter: "blur(10px)" }}>
+            <div style={{ color: C.sageMid, fontSize: 10, letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>Monthly Budget</div>
+            {budgetTotal > 0 ? (
+              <>
+                <div style={{ color: "white", fontSize: 30, fontWeight: 600, fontFamily: "'Playfair Display', serif" }}>
+                  <span style={{ color: C.goldLight, fontSize: 16 }}>$</span>{budgetSpent.toLocaleString()} <span style={{ color: C.sageMid, fontSize: 13 }}>of ${budgetTotal.toLocaleString()}</span>
+                </div>
+                <div style={{ color: C.sageMid, fontSize: 12, marginTop: 3 }}>${(budgetTotal - budgetSpent).toLocaleString()} remaining this month</div>
+              </>
+            ) : (
+              <div style={{ color: C.sageMid, fontSize: 13, marginTop: 4 }}>Set up your budget to get started</div>
+            )}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: `linear-gradient(135deg, ${C.gold}, ${C.goldLight})`, color: C.forestDeep, padding: "5px 12px", borderRadius: 18, fontSize: 11, fontWeight: 700, marginTop: 11 }}>
+              {currentLevel.badge} Level {currentLevel.level} — {currentLevel.name}
+            </div>
           </div>
         </div>
-      </HeroSection>
+
+        {/* LOCKED — DO NOT CHANGE without Paula's explicit approval
+            Right panel: 300px wide, charlotte.png cropped to 780x1254 from aimm CHARLOTTE.png
+            charlotte-face.png: 400x400 square from Desktop portrait screenshot (Jun 11 2026)
+            Avatar size: 96px. These values are final and approved. */}
+        <div style={{ width: 300, flexShrink: 0, alignSelf: "stretch", overflow: "hidden" }}>
+          <img src="/charlotte.png" alt="Charlotte at her desk" style={{ width: "100%", height: "auto", display: "block" }} />
+        </div>
+      </div>
 
       <div style={{ padding: "16px 18px 0" }}>
         <CharlotteTip>
@@ -288,9 +531,9 @@ function HomeTab({ onNavigate }: { onNavigate: (id: SectionId) => void }) {
 
         <SectionTitle>📈 Your Progress</SectionTitle>
         {[
-          { label: "Emergency Fund Goal", pct: 40 },
-          { label: "Financial Literacy Score", pct: 72 },
-          { label: `Level ${currentLevel.level} → Level ${currentLevel.level + 1}`, pct: Math.round((userXP - 500) / (1000 - 500) * 100), gold: true, badge: `${userXP} / 1,000 XP` },
+          { label: "Emergency Fund Goal", pct: efPct },
+          { label: "Financial Literacy Score", pct: flScore },
+          { label: `Level ${currentLevel.level} → Level ${Math.min(currentLevel.level + 1, CURRICULUM.length)}`, pct: (() => { const next = CURRICULUM[currentLevelIdx + 1]; if (!next) return 100; return Math.round((userXP - currentLevel.xp) / (next.xp - currentLevel.xp) * 100); })(), gold: true, badge: `${userXP} / ${CURRICULUM[currentLevelIdx + 1]?.xp ?? "MAX"} XP` },
         ].map(p => (
           <Card key={p.label}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
@@ -353,10 +596,9 @@ function BudgetTab() {
   );
 }
 
-function LearnTab() {
-  const userXP = 340;
-  const currentLevelIdx = CURRICULUM.findIndex(l => l.xp > userXP) - 1;
-  const currentLevel = CURRICULUM[currentLevelIdx < 0 ? 0 : currentLevelIdx];
+function LearnTab({ userXP }: { userXP: number }) {
+  const currentLevelIdx = Math.max(0, CURRICULUM.findIndex(l => l.xp > userXP) - 1);
+  const currentLevel = CURRICULUM[currentLevelIdx];
 
   return (
     <div>
@@ -404,25 +646,30 @@ function LearnTab() {
   );
 }
 
-function ProgressTab() {
+function ProgressTab({ userXP, streak, badgeCount, userName }: { userXP: number; streak: number; badgeCount: number; userName?: string }) {
+  const currentLevelIdx = Math.max(0, CURRICULUM.findIndex(l => l.xp > userXP) - 1);
+  const currentLevel = CURRICULUM[currentLevelIdx];
+  const initial = userName ? userName[0].toUpperCase() : "?";
+
   const BADGES = [
-    { emoji: "🌱", label: "Budget Starter", earned: true },
-    { emoji: "🏦", label: "Saver", earned: true },
-    { emoji: "📊", label: "Quiz Master", earned: true },
-    { emoji: "⭐", label: "7-Day Streak", earned: false },
-    { emoji: "🏆", label: "Money Master", earned: false },
-    { emoji: "💎", label: "Elite", earned: false },
+    { emoji: "🌱", label: "Budget Starter", earned: badgeCount >= 1 },
+    { emoji: "🏦", label: "Saver",          earned: badgeCount >= 2 },
+    { emoji: "📊", label: "Quiz Master",    earned: badgeCount >= 3 },
+    { emoji: "⭐", label: "7-Day Streak",   earned: streak >= 7 },
+    { emoji: "🏆", label: "Money Master",   earned: userXP >= 2000 },
+    { emoji: "💎", label: "Elite",          earned: userXP >= 4000 },
   ];
+
   return (
     <div>
-      <HeroSection title="Paula's Journey" subtitle="Your Achievements" icon="progress">
+      <HeroSection title={`${userName ?? "Your"} Journey`} subtitle="Your Achievements" icon="progress">
         <div style={{ textAlign: "center" }}>
-          <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 10px", border: `3px solid ${C.goldLight}` }}>P</div>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${C.forestMid}, ${C.gold})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 10px", border: `3px solid ${C.goldLight}` }}>{initial}</div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: `linear-gradient(135deg, ${C.gold}, ${C.goldLight})`, color: C.forestDeep, padding: "5px 13px", borderRadius: 18, fontSize: 11, fontWeight: 700, marginBottom: 12 }}>
-            ⭐ Level 3 — Apprentice Saver
+            {currentLevel.badge} Level {currentLevel.level} — {currentLevel.name}
           </div>
           <div style={{ display: "flex", gap: 22, justifyContent: "center" }}>
-            {[["340", "XP Points"], ["7", "Day Streak"], ["3", "Badges"]].map(([v, l]) => (
+            {[[String(userXP), "XP Points"], [String(streak), "Day Streak"], [String(badgeCount), "Badges"]].map(([v, l]) => (
               <div key={l} style={{ textAlign: "center" }}>
                 <div style={{ color: C.goldLight, fontSize: 20, fontWeight: 700 }}>{v}</div>
                 <div style={{ color: C.sageMid, fontSize: 10 }}>{l}</div>
@@ -443,13 +690,14 @@ function ProgressTab() {
         </div>
         <SectionTitle>🗺️ Level Roadmap</SectionTitle>
         {CURRICULUM.map((lvl, idx) => {
-          const done = idx < 2, current = idx === 2;
+          const done = idx < currentLevelIdx;
+          const current = idx === currentLevelIdx;
           return (
             <div key={lvl.level} style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 8, padding: "12px 14px", background: current ? C.forestDeep : done ? "rgba(26,92,53,0.07)" : C.cardBg, border: `1px solid ${current ? C.gold : done ? C.forestMid : C.border}`, borderRadius: 11 }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: (done || current) ? C.gold : C.sageMid, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, color: (done || current) ? C.forestDeep : C.textMuted, flexShrink: 0 }}>{lvl.level}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: current ? "white" : done ? C.forest : C.text }}>{lvl.name}</div>
-                <div style={{ fontSize: 11, color: current ? C.sageMid : C.textMuted }}>{lvl.xp} XP</div>
+                <div style={{ fontSize: 11, color: current ? C.sageMid : C.textMuted }}>{lvl.xp} XP to unlock</div>
               </div>
               {done && <div style={{ color: C.gold, fontSize: 14 }}>✓</div>}
               {current && <div style={{ color: C.goldLight, fontSize: 10, fontWeight: 700 }}>YOU ARE HERE</div>}
@@ -579,7 +827,7 @@ function CharlotteTab({ currentSection }: { currentSection: SectionId }) {
         {messages.map((m, i) => (
           <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: 10 }}>
             <div style={{ maxWidth: "86%", background: m.role === "assistant" ? C.forestDeep : C.gold, color: m.role === "assistant" ? "white" : C.forestDeep, borderRadius: m.role === "assistant" ? "4px 14px 14px 14px" : "14px 4px 14px 14px", padding: "10px 13px", fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-              {m.role === "assistant" && <div style={{ color: C.gold, fontSize: 9.5, fontWeight: 700, marginBottom: 4 }}>✨ CHARLOTTE</div>}
+              {m.role === "assistant" && <div style={{ color: C.gold, fontSize: 9.5, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}><GoldStar size={11} /> CHARLOTTE</div>}
               {m.content}
             </div>
           </div>
@@ -604,18 +852,32 @@ function CharlotteTab({ currentSection }: { currentSection: SectionId }) {
 }
 
 /* ─────────────── SECTION REGISTRY ─────────────── */
-function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, activeSection: SectionId, isLoggedIn: boolean) {
+function renderSection(
+  id: SectionId,
+  onNavigate: (s: SectionId) => void,
+  activeSection: SectionId,
+  isLoggedIn: boolean,
+  userName?: string,
+  onAuthSuccess?: (id: string, name: string) => void,
+  userXP = 0,
+  budgetSpent = 0,
+  budgetTotal = 0,
+  efPct = 0,
+  flScore = 0,
+  streak = 0,
+  badgeCount = 0,
+) {
   switch (id) {
-    case "home":      return <HomeTab onNavigate={onNavigate} />;
+    case "home":      return <HomeTab onNavigate={onNavigate} userName={userName} isLoggedIn={isLoggedIn} onAuthSuccess={onAuthSuccess ?? (() => {})} userXP={userXP} budgetSpent={budgetSpent} budgetTotal={budgetTotal} efPct={efPct} flScore={flScore} />;
     case "budget":    return <BudgetTab />;
     case "charlotte": return <CharlotteTab currentSection={activeSection} />;
-    case "learn":     return <LearnTab />;
-    case "progress":  return <ProgressTab />;
+    case "learn":     return <LearnTab userXP={userXP} />;
+    case "progress":  return <ProgressTab userXP={userXP} streak={streak} badgeCount={badgeCount} userName={userName} />;
     case "goals":     return <GoalsSection isLoggedIn={isLoggedIn} />;
     case "links":     return <LinksSection isLoggedIn={isLoggedIn} />;
 
     case "home-buying":
-      return <GoalSection icon="home-buying" title="Buying a Home" quizKey="home-buying"
+      return <div><MortgageRates /><GoalSection icon="home-buying" title="Buying a Home" quizKey="home-buying"
         intro="Buying a home is one of the biggest financial decisions you'll make. Charlotte will walk you through each step — from saving your down payment to understanding mortgage rates."
         tips={[
           "Before we talk home buying — do you have 3-6 months of emergency savings? That's the foundation everything else is built on.",
@@ -632,7 +894,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
           { api: "HUD API", description: "Fair market rent data, affordable housing resources, first-time buyer program info", url: "https://www.hud.gov/program_offices/cio/webAPIs" },
           { api: "Zillow Research (CSV)", description: "Home value indexes and market trends by ZIP code", url: "https://www.zillow.com/research/data/" },
         ]}
-      />;
+      /></div>;
 
     case "credit":
       return <GoalSection icon="credit" title="Credit & Debt" quizKey="credit"
@@ -655,7 +917,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
       />;
 
     case "investments":
-      return <GoalSection icon="investments" title="Investments" quizKey="investments"
+      return <div><StockTicker /><GoalSection icon="investments" title="Investments" quizKey="investments"
         intro="Investing grows your money over time through the power of compound interest. Charlotte starts with your foundation before unlocking advanced strategies. Remember: never invest money you can't afford to lose, and this is education — not investment advice."
         tips={[
           "Important question first: do you have a 3-6 month emergency fund and no high-interest debt? That comes before investing.",
@@ -672,7 +934,7 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
           { api: "Polygon.io", description: "Stock market data, indices, and financial data. Generous free tier.", url: "https://polygon.io/docs/" },
           { api: "Yahoo Finance (yfinance)", description: "Unofficial but widely used for historical stock and index data (Python library)", url: "https://pypi.org/project/yfinance/" },
         ]}
-      />;
+      /></div>;
 
     case "retirement":
       return <GoalSection icon="retirement" title="Retirement" quizKey="retirement"
@@ -772,32 +1034,80 @@ function renderSection(id: SectionId, onNavigate: (s: SectionId) => void, active
         ]}
       />;
 
-    default: return <HomeTab onNavigate={onNavigate} />;
+    default: return <HomeTab onNavigate={onNavigate} userName={userName} isLoggedIn={isLoggedIn} onAuthSuccess={onAuthSuccess ?? (() => {})} userXP={userXP} budgetSpent={budgetSpent} budgetTotal={budgetTotal} efPct={efPct} flScore={flScore} />;
   }
 }
 
 /* ─────────────── MAIN APP ─────────────── */
+const LS_KEYS = ["xp", "budgetSpent", "budgetTotal", "efPct", "flScore", "streak", "badges"] as const;
+
+function lsGet(uid: string, key: string): number {
+  if (typeof window === "undefined") return 0;
+  const v = localStorage.getItem(uid + "_" + key);
+  return v !== null ? Number(v) : 0;
+}
+function lsSet(uid: string, key: string, val: number) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(uid + "_" + key, String(val));
+}
+function lsClear(uid: string) {
+  if (typeof window === "undefined") return;
+  LS_KEYS.forEach(k => localStorage.removeItem(uid + "_" + k));
+}
+
 export default function AIMoneyMentor() {
   const [active, setActive] = useState<SectionId>("home");
   const [disclaimerShown, setDisclaimerShown] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null);
+
+  /* ── User data — all default to 0 (true zero for new accounts) ── */
+  const [userXP,       setUserXP]       = useState(0);
+  const [budgetSpent,  setBudgetSpent]  = useState(0);
+  const [budgetTotal,  setBudgetTotal]  = useState(0);
+  const [efPct,        setEfPct]        = useState(0);
+  const [flScore,      setFlScore]      = useState(0);
+  const [streak,       setStreak]       = useState(0);
+  const [badgeCount,   setBadgeCount]   = useState(0);
+
   const mainRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+
+  /* ── Load user data from localStorage when user changes ── */
+  useEffect(() => {
+    if (!user?.id) {
+      setUserXP(0); setBudgetSpent(0); setBudgetTotal(0);
+      setEfPct(0); setFlScore(0); setStreak(0); setBadgeCount(0);
+      return;
+    }
+    const uid = user.id;
+    setUserXP(lsGet(uid, "xp"));
+    setBudgetSpent(lsGet(uid, "budgetSpent"));
+    setBudgetTotal(lsGet(uid, "budgetTotal"));
+    setEfPct(lsGet(uid, "efPct"));
+    setFlScore(lsGet(uid, "flScore"));
+    setStreak(lsGet(uid, "streak"));
+    setBadgeCount(lsGet(uid, "badges"));
+  }, [user?.id]);
+
+  /* ── Persist XP changes to localStorage ── */
+  useEffect(() => {
+    if (user?.id) lsSet(user.id, "xp", userXP);
+  }, [userXP, user?.id]);
 
   // Check existing session on mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         const name = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "there";
-        setUser({ name, email: session.user.email ?? "" });
+        setUser({ id: session.user.id, name, email: session.user.email ?? "" });
       }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         const name = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "there";
-        setUser({ name, email: session.user.email ?? "" });
+        setUser({ id: session.user.id, name, email: session.user.email ?? "" });
       } else {
         setUser(null);
       }
@@ -810,6 +1120,7 @@ export default function AIMoneyMentor() {
   const navigate = (id: SectionId) => { setActive(id); setSidebarOpen(false); };
 
   async function signOut() {
+    if (user?.id) lsClear(user.id);
     await supabase.auth.signOut();
     setUser(null);
   }
@@ -926,17 +1237,22 @@ export default function AIMoneyMentor() {
         {/* ── DESKTOP SIDEBAR ── */}
         <aside className="sidebar">
           <div className="sidebar-logo">
-            <CharlotteLogo size={36} showText={true} dark={true} />
+            <CharlotteLogo size={54} showText={true} dark={true} />
           </div>
           {NAV_GROUPS.map(group => (
             <div key={group.label}>
               <div className="sidebar-group-label">{group.label}</div>
-              {group.items.map(item => (
-                <div key={item.id} className={`sidebar-item${active === item.id ? " active" : ""}`} onClick={() => navigate(item.id)}>
-                  <span className="sidebar-icon"><NavIcon id={item.id} size={17} color={active === item.id ? C.goldLight : "rgba(200,217,168,0.65)"} /></span>
-                  <span>{item.label}</span>
-                </div>
-              ))}
+              {group.items.map(item => {
+                const locked = !user && item.id !== "home";
+                return (
+                  <div key={item.id} className={`sidebar-item${active === item.id ? " active" : ""}`}
+                    onClick={() => !locked && navigate(item.id)}
+                    style={{ opacity: locked ? 0.4 : 1, pointerEvents: locked ? "none" : "auto" }}>
+                    <span className="sidebar-icon"><NavIcon id={item.id} size={17} color={active === item.id ? C.goldLight : "rgba(200,217,168,0.65)"} /></span>
+                    <span>{item.label}</span>
+                  </div>
+                );
+              })}
             </div>
           ))}
           <div style={{ marginTop: "auto", padding: "16px", borderTop: `1px solid rgba(201,169,78,0.15)` }}>
@@ -976,12 +1292,17 @@ export default function AIMoneyMentor() {
             {NAV_GROUPS.map(group => (
               <div key={group.label}>
                 <div className="sidebar-group-label">{group.label}</div>
-                {group.items.map(item => (
-                  <div key={item.id} className={`sidebar-item${active === item.id ? " active" : ""}`} onClick={() => navigate(item.id)}>
-                    <span className="sidebar-icon"><NavIcon id={item.id} size={17} color={active === item.id ? C.goldLight : "rgba(200,217,168,0.65)"} /></span>
-                    <span>{item.label}</span>
-                  </div>
-                ))}
+                {group.items.map(item => {
+                  const locked = !user && item.id !== "home";
+                  return (
+                    <div key={item.id} className={`sidebar-item${active === item.id ? " active" : ""}`}
+                      onClick={() => !locked && navigate(item.id)}
+                      style={{ opacity: locked ? 0.4 : 1, pointerEvents: locked ? "none" : "auto" }}>
+                      <span className="sidebar-icon"><NavIcon id={item.id} size={17} color={active === item.id ? C.goldLight : "rgba(200,217,168,0.65)"} /></span>
+                      <span>{item.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
@@ -1010,17 +1331,22 @@ export default function AIMoneyMentor() {
           {/* Section content */}
           <div className="content-scroll fade-in" ref={mainRef} key={active}
             style={{ display: "flex", flexDirection: "column", ...(active === "charlotte" ? { height: "calc(100vh - 110px)", overflow: "hidden" } : {}) }}>
-            {renderSection(active, navigate, active, !!user)}
+            {renderSection(active, navigate, active, !!user, user?.name, (id, name) => { setUser({ id, name, email: "" }); }, userXP, budgetSpent, budgetTotal, efPct, flScore, streak, badgeCount)}
           </div>
 
           {/* Mobile bottom nav */}
           <nav className="bottom-nav-mobile">
-            {MOBILE_BOTTOM.map(item => (
-              <button key={item.id} className={`bottom-nav-btn${active === item.id ? " active" : ""}`} onClick={() => navigate(item.id)}>
-                <span className="bottom-nav-icon"><NavIcon id={item.id} size={22} color={active === item.id ? C.goldLight : C.sageMid} /></span>
-                <span className="bottom-nav-label">{item.short}</span>
-              </button>
-            ))}
+            {MOBILE_BOTTOM.map(item => {
+              const locked = !user && item.id !== "home";
+              return (
+                <button key={item.id} className={`bottom-nav-btn${active === item.id ? " active" : ""}`}
+                  onClick={() => !locked && navigate(item.id)}
+                  style={{ opacity: locked ? 0.4 : 1, pointerEvents: locked ? "none" : "auto" }}>
+                  <span className="bottom-nav-icon"><NavIcon id={item.id} size={22} color={active === item.id ? C.goldLight : C.sageMid} /></span>
+                  <span className="bottom-nav-label">{item.short}</span>
+                </button>
+              );
+            })}
             <button className={`bottom-nav-btn${NAV_GROUPS[1].items.some(i => i.id === active) ? " active" : ""}`} onClick={() => setSidebarOpen(true)}>
               <span className="bottom-nav-icon"><NavIcon id="more" size={22} color={NAV_GROUPS[1].items.some(i => i.id === active) ? C.goldLight : C.sageMid} /></span>
               <span className="bottom-nav-label">More</span>
@@ -1032,7 +1358,7 @@ export default function AIMoneyMentor() {
       {showAuth && (
         <AuthModal
           onClose={() => setShowAuth(false)}
-          onSuccess={(name) => { setUser({ name, email: "" }); setShowAuth(false); }}
+          onSuccess={(id, name) => { setUser({ id, name, email: "" }); setShowAuth(false); }}
         />
       )}
     </>

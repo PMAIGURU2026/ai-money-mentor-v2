@@ -27,16 +27,25 @@ vercel --prod    # deploy to production
 | `ANTHROPIC_API_KEY` | Server only | Charlotte AI |
 | `NEXT_PUBLIC_SUPABASE_URL` | Client + Server | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server | Supabase public anon key |
+| `ALPHA_VANTAGE_API_KEY` | Server only | Live stock/ETF quotes (Investments section) |
 
-Never put `ANTHROPIC_API_KEY` in a `NEXT_PUBLIC_` variable — it would be exposed to the browser.
+Never put `ANTHROPIC_API_KEY` or `ALPHA_VANTAGE_API_KEY` in a `NEXT_PUBLIC_` variable — they would be exposed to the browser.
+
+All of these live in `.env.local` for local dev (already in `.gitignore` — never committed). For Vercel production, set them in Project → Settings → Environment Variables in the Vercel dashboard.
 
 ## Key files to know
 
 - `components/AIMoneyMentor.tsx` — entire app UI, nav, all tabs, quiz bank, curriculum
+- `components/CharlotteAvatar.tsx` — animated Charlotte avatar (floating, orbiting coin, celebrate/think states)
+- `components/Logo.tsx` — inline SVG logo, dark/light adaptive
 - `app/api/chat/route.ts` — Charlotte system prompt + Anthropic API call
+- `app/api/mortgage/route.ts` — live 30-yr/15-yr rates from FRED (no key needed, 1hr cache)
+- `app/api/stocks/route.ts` — live ETF quotes from Alpha Vantage (5-min cache, uses `ALPHA_VANTAGE_API_KEY`)
 - `components/GoalsSection.tsx` — savings goals CRUD with calendar export
 - `components/LinksSection.tsx` — link saver component
 - `supabase-schema.sql` — run this in Supabase SQL editor to set up tables
+- `public/charlotte.png` — Charlotte full-body portrait (780×1254)
+- `public/charlotte-face.png` — Charlotte face/avatar crop
 
 ## Adding a new section
 
