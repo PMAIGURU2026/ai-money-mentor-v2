@@ -152,4 +152,4 @@ Add the same four environment variables in Vercel → Project → Settings → E
 
 ---
 
-*Built by Paula Lawton for the Pursuit L2 Fellowship (2025–2026)*
+*Built by Paula Lawton, v1 in L1_v2 Pursuit L3 portfolio/lookbook  Fellowship (2025–2026)*
