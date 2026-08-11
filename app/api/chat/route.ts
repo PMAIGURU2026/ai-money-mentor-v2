@@ -180,8 +180,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply: text });
   } catch (err) {
     console.error("Charlotte API error:", err);
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "Charlotte is having a moment. Try again soon! 🌿" },
+      { error: "Charlotte is having a moment. Try again soon! 🌿", debug: msg },
       { status: 500 }
     );
   }
