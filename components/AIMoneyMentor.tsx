@@ -561,13 +561,34 @@ function HomeTab({ onNavigate, userName, isLoggedIn, onAuthSuccess, userXP, budg
   );
 }
 
-function BudgetTab() {
+function BudgetTab({ isLoggedIn, onAuthSuccess }: { isLoggedIn: boolean; onAuthSuccess: (id: string, name: string) => void }) {
+  /* ── GUEST STATE ─────────────────────────────────────────────────────── */
+  if (!isLoggedIn) {
+    return (
+      <div>
+        <div style={{ background: `linear-gradient(160deg, ${C.forestDeep} 0%, ${C.forest} 60%, ${C.forestMid} 100%)`, display: "flex", alignItems: "stretch", overflow: "hidden", position: "relative", minHeight: 380 }}>
+          <div style={{ position: "absolute", top: -40, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(201,169,78,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+          <div style={{ flex: 1, padding: "20px 16px", display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+            <div style={{ flexShrink: 0 }}>
+              <CharlotteAvatar state="greeting" size={88} showBubble={true} message="Sign in to build your budget! 💚" />
+            </div>
+            <GuestAuthCard onAuthSuccess={onAuthSuccess} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const total = BUDGET_ITEMS.reduce((s, i) => s + i.spent, 0);
   const budgetTotal = BUDGET_ITEMS.reduce((s, i) => s + i.total, 0);
   return (
     <div>
-      <HeroSection title="April 2026" subtitle="Budget Builder" icon="budget">
-        <div style={{ color: C.sageMid, fontSize: 13 }}>Income: <strong style={{ color: "white" }}>$2,100</strong> &nbsp;|&nbsp; Spent: <strong style={{ color: C.goldLight }}>${total}</strong></div>
+      <HeroSection title="Budget Builder" subtitle="Your Monthly Plan" icon="budget">
+        {budgetTotal > 0 ? (
+          <div style={{ color: C.sageMid, fontSize: 13 }}>Spent: <strong style={{ color: C.goldLight }}>${total}</strong> of ${budgetTotal}</div>
+        ) : (
+          <div style={{ color: C.sageMid, fontSize: 13 }}>Set up your budget to get started</div>
+        )}
       </HeroSection>
       <div style={{ padding: "18px 18px 0" }}>
         <SectionTitle>Spending Breakdown</SectionTitle>
@@ -589,7 +610,7 @@ function BudgetTab() {
         </div>
         <QuizWidget sectionKey="budget" />
         <CharlotteTip>
-          Try the <strong style={{ color: "white" }}>50/30/20 rule</strong>: 50% for needs (rent, food, transport), 30% for wants, 20% for savings & debt. Your housing is 95% of budget — great restraint! 🥧
+          Try the <strong style={{ color: "white" }}>50/30/20 rule</strong>: 50% for needs (rent, food, transport), 30% for wants, 20% for savings & debt. 🥧
         </CharlotteTip>
       </div>
     </div>
@@ -869,7 +890,7 @@ function renderSection(
 ) {
   switch (id) {
     case "home":      return <HomeTab onNavigate={onNavigate} userName={userName} isLoggedIn={isLoggedIn} onAuthSuccess={onAuthSuccess ?? (() => {})} userXP={userXP} budgetSpent={budgetSpent} budgetTotal={budgetTotal} efPct={efPct} flScore={flScore} />;
-    case "budget":    return <BudgetTab />;
+    case "budget":    return <BudgetTab isLoggedIn={isLoggedIn} onAuthSuccess={onAuthSuccess ?? (() => {})} />;
     case "charlotte": return <CharlotteTab currentSection={activeSection} />;
     case "learn":     return <LearnTab userXP={userXP} />;
     case "progress":  return <ProgressTab userXP={userXP} streak={streak} badgeCount={badgeCount} userName={userName} />;
